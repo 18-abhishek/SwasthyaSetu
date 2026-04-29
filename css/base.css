@@ -1,0 +1,111 @@
+/* Base Styles and Global Utilities */
+
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Background Patterns */
+.hero-pattern {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.dot-pattern {
+    background-image: radial-gradient(#113841 1px, transparent 1px);
+    background-size: 16px 16px;
+    opacity: 0.05;
+}
+
+/* Global Transitions */
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Prevent layout shift when scrollbar appears/disappears */
+html {
+    scrollbar-gutter: stable;
+}
+
+/* Prevent navigation link shifting - make all links semibold */
+nav a {
+    font-weight: 600;
+}
+
+/* Prevent FOUC (Flash of Unstyled Content) */
+html {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Ensure fonts are loaded before display */
+body {
+    font-display: swap;
+}
+
+/* Prevent layout shift during page load */
+nav {
+    min-height: 72px;
+}
+
+/* Force GPU acceleration for smoother rendering */
+nav,
+nav * {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* --- PREMIUM UI/UX ENHANCEMENTS --- */
+
+/* 1. Global Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* 2. Premium Transitions for Interactive Elements */
+a,
+button,
+input,
+select,
+textarea,
+.card,
+.transition-all {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Standard Material Design curve */
+}
+
+/* 3. Tactile Feedback (Click Effect) */
+button:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+/* 4. Smooth Page Load Animation (REMOVED) */
+/*
+@keyframes fadeInUp { ... }
+.page-animate-in { ... }
+*/
+
+/* 5. Consistent Focus States */
+*:focus-visible {
+    outline: 2px solid #86efac;
+    /* Primary color */
+    outline-offset: 2px;
+}
+
+/* 6. Smooth Image Loading */
+img {
+    transition: opacity 0.3s ease-in-out;
+}

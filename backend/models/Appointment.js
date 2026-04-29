@@ -1,0 +1,94 @@
+const mongoose = require('mongoose');
+
+const appointmentSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: [true, 'User ID is required']
+    },
+    hospitalId: {
+        type: String, // Changed to String to support both ObjectId and external IDs
+        required: [true, 'Hospital ID is required']
+    },
+    hospital: {
+        type: String, // Store name for external hospitals (matches frontend payload)
+        required: [true, 'Hospital name is required']
+    },
+    hospitalAddress: {
+        type: String // Store address for external hospitals
+    },
+    doctor: {
+        type: String,
+        required: [true, 'Doctor name is required']
+    },
+    specialty: {
+        type: String,
+        required: [true, 'Specialty is required']
+    },
+    date: {
+        type: Date,
+        required: [true, 'Appointment date is required']
+    },
+    time: {
+        type: String,
+        required: [true, 'Appointment time is required']
+    },
+    type: {
+        type: String,
+        enum: ['In-person', 'Telemedicine'],
+        required: [true, 'Appointment type is required']
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'confirmed', 'completed', 'cancelled', 'rejected'],
+        default: 'pending'
+    },
+    reason: {
+        type: String,
+        required: [true, 'Reason for appointment is required']
+    },
+    notes: {
+        type: String // Hospital admin notes
+    },
+    confirmedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User' // Hospital admin who confirmed
+    },
+    confirmedAt: {
+        type: Date
+    },
+    documents: [{
+        type: { type: String, enum: ['prescription', 'diagnosis', 'report', 'other'], default: 'prescription' },
+        url: String, // In a real app, this would be a file path/URL. For simulation, base64 or placeholder.
+        notes: String,
+        uploadedAt: { type: Date, default: Date.now },
+        uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+    }],
+    transferStatus: {
+        type: String,
+        enum: ['none', 'pending', 'approved', 'rejected'],
+        default: 'none'
+    },
+    transferToHospital: {
+        type: String // Hospital ID requesting transfer or destination
+    },
+    // Cancellation tracking
+    cancelReason: {
+        type: String // Reason for cancellation (entered by admin)
+    },
+    cancelledBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User' // Admin who cancelled
+    },
+    cancelledAt: {
+        type: Date
+    }
+}, {
+    timestamps: true
+});
+
+// Index for faster queries
+appointmentSchema.index({ userId: 1, date: -1 });
+appointmentSchema.index({ hospitalId: 1, status: 1, date: -1 });
+
+module.exports = mongoose.model('Appointment', appointmentSchema);

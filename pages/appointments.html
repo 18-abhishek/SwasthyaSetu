@@ -1,0 +1,566 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link rel="icon" type="image/png" href="../assets/icons/favicon.png" />
+    <title>My Appointments - SwasthyaSetu</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet" />
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#86efac",
+                        secondary: "#113841",
+                        "secondary-light": "#1d525e",
+                        "background-dark": "#0d2b32",
+                        "accent-purple": "#e0defc",
+                        "accent-green": "#e6f0c2",
+                        "accent-blue": "#d0e8f2",
+                        "health-orange": "#f78e69",
+                    },
+                    fontFamily: {
+                        display: ["Playfair Display", "serif"],
+                        sans: ["DM Sans", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components/chatbot.css">
+</head>
+
+<body class="bg-[#fffefc] dark:bg-background-dark font-sans antialiased text-gray-800 dark:text-gray-100 min-h-screen">
+
+    <!-- Navigation -->
+    <nav
+        class="w-full bg-secondary text-white py-4 px-6 md:px-12 flex justify-between items-center border-b border-white/10">
+        <a href="../index.html" class="flex items-center gap-2">
+            <img src="../assets/images/logo.png" alt="SwasthyaSetu Logo" class="h-8 w-auto">
+        </a>
+        <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
+            <a class="hover:text-primary transition-colors" href="dashboard.html">Dashboard</a>
+            <a class="hover:text-primary transition-colors" href="hospitals.html">Hospitals</a>
+            <a class="text-primary font-semibold" href="appointments.html">Appointments</a>
+            <a class="hover:text-primary transition-colors" href="profile.html">Profile</a>
+        </div>
+        <div class="flex items-center gap-4">
+            <button id="logout-btn"
+                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors text-sm font-semibold">
+                Logout
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Header -->
+        <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="font-display text-4xl font-bold text-secondary dark:text-white mb-2">My Appointments</h1>
+                <p class="text-gray-600 dark:text-gray-400">Manage your upcoming and past appointments</p>
+            </div>
+            <a href="book-appointment.html"
+                class="bg-secondary text-white px-6 py-3 rounded-lg font-semibold hover:bg-secondary-light transition-colors flex items-center gap-2 w-fit">
+                <span class="material-icons-outlined">add</span>
+                Book New Appointment
+            </a>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex gap-8">
+                <button
+                    class="tab-btn active pb-4 px-2 font-semibold text-secondary dark:text-primary border-b-2 border-secondary dark:border-primary"
+                    data-tab="upcoming">
+                    Upcoming
+                </button>
+                <button
+                    class="tab-btn pb-4 px-2 font-semibold text-gray-500 hover:text-secondary dark:hover:text-primary border-b-2 border-transparent"
+                    data-tab="past">
+                    Past
+                </button>
+                <button
+                    class="tab-btn pb-4 px-2 font-semibold text-gray-500 hover:text-secondary dark:hover:text-primary border-b-2 border-transparent"
+                    data-tab="cancelled">
+                    Cancelled
+                </button>
+            </div>
+        </div>
+
+        <!-- Upcoming Appointments -->
+        <div id="upcoming-tab" class="tab-content">
+            <div class="space-y-4" id="upcoming-appointments">
+                <!-- Appointments will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Past Appointments -->
+        <div id="past-tab" class="tab-content hidden">
+            <div class="space-y-4" id="past-appointments">
+                <!-- Past appointments will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Cancelled Appointments -->
+        <div id="cancelled-tab" class="tab-content hidden">
+            <div class="space-y-4" id="cancelled-appointments">
+                <p class="text-center text-gray-500 py-8">No cancelled appointments</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Emergency Modal -->
+    <div id="emergency-modal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div
+            class="modal-content bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-red-500"></div>
+            <button id="close-modal-btn"
+                class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                <span class="material-icons-outlined">close</span>
+            </button>
+
+            <div class="text-center mb-6 pt-2">
+                <div
+                    class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                    <span class="material-icons-outlined text-red-600 text-3xl">emergency</span>
+                </div>
+                <h3 class="font-display text-2xl font-bold text-gray-900 dark:text-white">Emergency Support</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Select an option for immediate assistance</p>
+            </div>
+
+            <div class="space-y-3">
+                <button
+                    class="w-full flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-red-500/30 group">
+                    <span class="material-icons-outlined text-2xl group-hover:animate-bounce">airport_shuttle</span>
+                    <span class="text-lg whitespace-nowrap">Get an Ambulance</span>
+                </button>
+            </div>
+
+            <div class="mt-6 text-center">
+                <p class="text-xs text-gray-400">By using this service, you agree to share your location for emergency
+                    response.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="../js/config/constants.js"></script>
+    <script src="../js/config/app-config.js"></script>
+    <script src="../js/utils/app-utils.js"></script>
+    <script src="../js/services/api.js"></script>
+    <script src="../js/services/auth.js"></script>
+    <script src="../js/components/navigation.js"></script>
+
+    <script>
+        let allAppointments = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize auth service first to load user from storage
+            AuthService.init();
+
+            // Check authentication
+            if (!AuthService.isAuthenticated()) {
+                window.location.href = '../index.html';
+                return;
+            }
+
+            await loadAppointments();
+            setupTabs();
+            setupEventListeners();
+
+            // Initialize Navigation (for emergency modal)
+            if (typeof Navigation !== 'undefined') {
+                new Navigation();
+            }
+        });
+
+        async function loadAppointments() {
+            try {
+                // Get appointments from backend API
+                const response = await APIService.getAppointments();
+
+                if (response.success) {
+                    allAppointments = response.data || [];
+                } else {
+                    allAppointments = [];
+                }
+
+                displayAppointments();
+            } catch (error) {
+                console.error('Error loading appointments:', error);
+                Helpers.showToast('Failed to load appointments', 'error');
+                allAppointments = [];
+                displayAppointments();
+            }
+        }
+
+        function displayAppointments() {
+            const now = new Date();
+
+            const upcoming = allAppointments.filter(apt => {
+                // Safe date parsing
+                const dateStr = apt.date ? apt.date.toString().substring(0, 10) : '';
+                let timeStr = apt.time || '00:00';
+
+                // Handle corrupted data where time field has doctor name (no digits)
+                if (!/\d/.test(timeStr)) {
+                    timeStr = '00:00';
+                }
+
+                const aptDate = new Date(`${dateStr} ${timeStr}`);
+
+                // Show if future AND (confirmed OR pending)
+                return aptDate > now && (apt.status === 'confirmed' || apt.status === 'pending');
+            });
+
+            const past = allAppointments.filter(apt => {
+                const dateStr = apt.date ? apt.date.toString().substring(0, 10) : '';
+                let timeStr = apt.time || '00:00';
+
+                if (!/\d/.test(timeStr)) {
+                    timeStr = '00:00';
+                }
+
+                const aptDate = new Date(`${dateStr} ${timeStr}`);
+                // Past appointments that are completed (not cancelled)
+                return (aptDate <= now || apt.status === 'completed') && apt.status !== 'cancelled';
+            });
+
+            // Filter cancelled appointments
+            const cancelled = allAppointments.filter(apt => apt.status === 'cancelled');
+
+            // Debug logging
+            console.log('[Appointments] Total:', allAppointments.length);
+            console.log('[Appointments] Upcoming:', upcoming.length);
+            console.log('[Appointments] Past:', past.length);
+            console.log('[Appointments] Cancelled:', cancelled.length);
+            if (cancelled.length > 0) {
+                console.log('[Appointments] Cancelled details:', cancelled);
+            }
+
+            displayAppointmentList('upcoming-appointments', upcoming);
+            displayAppointmentList('past-appointments', past);
+            displayCancelledAppointments('cancelled-appointments', cancelled);
+        }
+
+        function displayAppointmentList(containerId, appointments) {
+            const container = document.getElementById(containerId);
+
+            if (appointments.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">No appointments found</p>';
+                return;
+            }
+
+            container.innerHTML = appointments.map(apt => {
+                const statusColors = {
+                    confirmed: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200',
+                    pending: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200',
+                    completed: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200',
+                    cancelled: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200'
+                };
+
+                const typeIcons = {
+                    'In-person': 'local_hospital',
+                    'Telemedicine': 'video_call'
+                };
+
+                const hasDocs = apt.documents && apt.documents.length > 0;
+
+                return `
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow">
+                        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                            <!-- Appointment Info -->
+                            <div class="flex gap-4 flex-1">
+                                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-secondary to-secondary-light flex items-center justify-center flex-shrink-0">
+                                    <span class="material-icons-outlined text-primary text-3xl">${typeIcons[apt.type] || 'event'}</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-start justify-between mb-2">
+                                        <div>
+                                            <h3 class="font-display text-xl font-bold text-secondary dark:text-white">
+                                                ${apt.doctor}
+                                            </h3>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">${apt.specialty}</p>
+                                        </div>
+                                        <span class="px-3 py-1 ${statusColors[apt.status] || statusColors.pending} rounded-full text-xs font-bold uppercase">
+                                            ${apt.status || 'pending'}
+                                        </span>
+                                    </div>
+
+                                    <div class="space-y-2 mt-3">
+                                        <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                            <span class="material-icons-outlined text-sm text-gray-400">location_on</span>
+                                            ${apt.hospital}
+                                        </div>
+                                        <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                            <span class="material-icons-outlined text-sm text-gray-400">calendar_today</span>
+                                            ${Helpers.formatDate(apt.date)} at ${apt.time}
+                                        </div>
+                                        <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                            <span class="material-icons-outlined text-sm text-gray-400">${typeIcons[apt.type] || 'event'}</span>
+                                            ${apt.type}
+                                        </div>
+                                    </div>
+
+                                    ${apt.reason ? `
+                                        <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                            <p class="text-sm text-gray-700 dark:text-gray-300">
+                                                <span class="font-semibold">Reason:</span> ${apt.reason}
+                                            </p>
+                                        </div>
+                                    ` : ''}
+
+                                    ${hasDocs ? `
+                                        <div class="mt-4 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                                            <p class="text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2 flex items-center gap-1">
+                                                <span class="material-icons-outlined text-sm">folder</span>
+                                                Documents (${apt.documents.length})
+                                            </p>
+                                            <div class="space-y-1">
+                                                ${apt.documents.map((doc, idx) => `
+                                                    <div class="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-300 cursor-pointer hover:underline"
+                                                         onclick="openDocument('${doc.url || doc.data || ''}', '${doc.name || 'Document'}')">
+                                                        <span class="material-icons-outlined text-sm">description</span>
+                                                        ${doc.name || 'Document ' + (idx + 1)}
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="flex md:flex-col gap-2 md:w-40">
+                                ${apt.status === 'confirmed' ? `
+                                    ${apt.type === 'Telemedicine' ? `
+                                        <button class="flex-1 bg-primary text-secondary px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-400 transition-colors flex items-center justify-center gap-1">
+                                            <span class="material-icons-outlined text-sm">video_call</span>
+                                            Join Call
+                                        </button>
+                                    ` : ''}
+                                    <button class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                                        Reschedule
+                                    </button>
+                                    <button class="flex-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors">
+                                        Cancel
+                                    </button>
+                                ` : apt.status === 'completed' ? `
+                                    ${hasDocs ? `
+                                    <button onclick="openDocument('${apt.documents[0]?.url || apt.documents[0]?.data || ''}', '${apt.documents[0]?.name || 'Document'}')"
+                                            class="flex-1 bg-secondary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-secondary-light transition-colors">
+                                        View Report
+                                    </button>
+                                    ` : ''}
+                                    <button class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                                        Book Again
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function displayCancelledAppointments(containerId, appointments) {
+            const container = document.getElementById(containerId);
+
+            if (appointments.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">No cancelled appointments</p>';
+                return;
+            }
+
+            container.innerHTML = appointments.map(apt => {
+                const typeIcons = {
+                    'In-person': 'local_hospital',
+                    'Telemedicine': 'video_call'
+                };
+
+                const hasDocs = apt.documents && apt.documents.length > 0;
+
+                return `
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-red-200 dark:border-red-800 p-6 opacity-80">
+                        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                            <!-- Appointment Info -->
+                            <div class="flex gap-4 flex-1">
+                                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center flex-shrink-0">
+                                    <span class="material-icons-outlined text-white text-3xl">event_busy</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-start justify-between mb-2">
+                                        <div>
+                                            <h3 class="font-display text-xl font-bold text-secondary dark:text-white">
+                                                ${apt.doctor}
+                                            </h3>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">${apt.specialty}</p>
+                                        </div>
+                                        <span class="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 rounded-full text-xs font-bold uppercase">
+                                            Cancelled
+                                        </span>
+                                    </div>
+
+                                    <div class="space-y-2 mt-3">
+                                        <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                            <span class="material-icons-outlined text-sm text-gray-400">location_on</span>
+                                            ${apt.hospital}
+                                        </div>
+                                        <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                            <span class="material-icons-outlined text-sm text-gray-400">calendar_today</span>
+                                            ${Helpers.formatDate(apt.date)} at ${apt.time}
+                                        </div>
+                                        <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                            <span class="material-icons-outlined text-sm text-gray-400">${typeIcons[apt.type] || 'event'}</span>
+                                            ${apt.type}
+                                        </div>
+                                    </div>
+
+                                    ${apt.cancelReason ? `
+                                        <div class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                            <div class="flex items-start gap-2">
+                                                <span class="material-icons-outlined text-red-500 text-lg mt-0.5">info</span>
+                                                <div>
+                                                    <p class="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">Cancellation Reason:</p>
+                                                    <p class="text-sm text-red-600 dark:text-red-300">${apt.cancelReason}</p>
+                                                    ${apt.cancelledAt ? `<p class="text-xs text-red-400 mt-2">Cancelled on: ${Helpers.formatDate(apt.cancelledAt)}</p>` : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+
+                                    ${hasDocs ? `
+                                        <div class="mt-4 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                                            <p class="text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2 flex items-center gap-1">
+                                                <span class="material-icons-outlined text-sm">folder</span>
+                                                Documents (${apt.documents.length})
+                                            </p>
+                                            <div class="space-y-1">
+                                                ${apt.documents.map((doc, idx) => `
+                                                    <div class="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-300 cursor-pointer hover:underline"
+                                                         onclick="openDocument('${doc.url || doc.data || ''}', '${doc.name || 'Document'}')">
+                                                        <span class="material-icons-outlined text-sm">description</span>
+                                                        ${doc.name || 'Document ' + (idx + 1)}
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+
+                            <!-- Actions for cancelled -->
+                            <div class="flex md:flex-col gap-2 md:w-40">
+                                <button class="flex-1 bg-secondary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-secondary-light transition-colors">
+                                    Book Again
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setupTabs() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabName = btn.dataset.tab;
+
+                    // Update button states
+                    tabButtons.forEach(b => {
+                        b.classList.remove('active', 'text-secondary', 'dark:text-primary', 'border-secondary', 'dark:border-primary');
+                        b.classList.add('text-gray-500', 'border-transparent');
+                    });
+                    btn.classList.add('active', 'text-secondary', 'dark:text-primary', 'border-secondary', 'dark:border-primary');
+                    btn.classList.remove('text-gray-500', 'border-transparent');
+
+                    // Update content visibility
+                    tabContents.forEach(content => {
+                        content.classList.add('hidden');
+                    });
+                    document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+                });
+            });
+        }
+
+        function setupEventListeners() {
+            // Logout button
+            document.getElementById('logout-btn').addEventListener('click', async () => {
+                await AuthService.logout();
+                Helpers.showToast('Logged out successfully', 'success');
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 1000);
+            });
+        }
+
+        // Open document in new window
+        function openDocument(docUrl, docName) {
+            if (!docUrl || docUrl === '') {
+                Helpers.showToast('Document not available', 'error');
+                return;
+            }
+
+            if (docUrl.startsWith('data:')) {
+                // For base64 data URLs, open in new window with embedded iframe
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                    newWindow.document.title = docName || 'Document';
+                    newWindow.document.body.style.margin = '0';
+                    newWindow.document.body.innerHTML = `
+                        <iframe src="${docUrl}"
+                                style="width:100%;height:100vh;border:none;"
+                                title="${docName}">
+                        </iframe>
+                    `;
+                } else {
+                    Helpers.showToast('Popup blocked. Please allow popups.', 'error');
+                }
+            } else {
+                // Regular URL
+                window.open(docUrl, '_blank');
+            }
+        }
+    </script>
+
+    <!-- Chatbot Scripts -->
+    <script src="../js/config/gemini-config.js"></script>
+    <script src="../js/services/chatbot-context.js"></script>
+    <script src="../js/components/chatbot.js"></script>
+    <script>
+        // Initialize chatbot after all scripts load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (typeof Chatbot !== 'undefined') {
+                    window.chatbotInstance = new Chatbot();
+                    console.log('Chatbot initialized successfully');
+                } else {
+                    console.error('Chatbot class not found');
+                }
+            }, 500);
+        });
+    </script>
+</body>
+
+</html>

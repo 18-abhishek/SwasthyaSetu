@@ -1,0 +1,464 @@
+/**
+ * Authentication Service
+ * Handles user authentication and session management
+ */
+
+const AuthService = {
+    /**
+     * Current user data
+     */
+    currentUser: null,
+
+    /**
+     * Initialize auth service
+     */
+    init() {
+        // Check if user is already logged in
+        const savedUser = Helpers.getStorage(AppConfig.storage.userProfile);
+        const token = Helpers.getStorage(AppConfig.storage.authToken);
+
+        if (savedUser && token) {
+            this.currentUser = savedUser;
+        }
+    },
+
+    /**
+     * Login with ABHA ID or mobile
+     * @param {string} identifier - ABHA ID or mobile number
+     * @param {string} password - Password or OTP
+     * @param {string} userType - 'patient' or 'admin'
+     * @param {boolean} rememberMe - Whether to remember credentials
+     * @returns {Promise<object>} Login response
+     */
+    async login(identifier, password, userType = 'patient', rememberMe = false) {
+        try {
+            // Detect API URL based on environment
+            const hostname = window.location.hostname;
+            const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+            const apiBaseUrl = isLocal
+                ? 'http://localhost:5000/api'
+                : API_CONFIG.PRODUCTION_API_URL;
+
+            console.log('🔐 Login attempt');
+            console.log('   Hostname:', hostname);
+            console.log('   API URL:', `${apiBaseUrl}/auth/login`);
+
+            // Use an AbortController to time out after 10 seconds
+            // (Render free tier cold starts can take 30s+ — we don't want to hang)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+            // Call backend API
+            const response = await fetch(`${apiBaseUrl}/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    abhaId: identifier,
+                    password: password,
+                    role: userType // Pass the selected tab role
+                }),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            const data = await response.json();
+
+            if (data.success && data.token) {
+                // Create user profile from backend response
+                const userProfile = {
+                    id: data.user._id,
+                    type: data.user.role, // 'patient', 'admin', or 'government'
+                    identifier: data.user.abhaId || data.user.username,
+                    name: data.user.name || data.user.username,
+                    mobile: data.user.mobile,
+                    email: data.user.email,
+                    age: data.user.age,
+                    gender: data.user.gender,
+                    loginTime: new Date().toISOString(),
+                    token: data.token
+                };
+
+                // Validate Role Match
+                const selectedRole = userType; // patient, admin, or government
+                const userRole = userProfile.type;
+
+                if (selectedRole === 'patient' && userRole !== 'patient') {
+                    return {
+                        success: false,
+                        message: 'This account is for staff. Please use the appropriate login tab.',
+                        error: 'ROLE_MISMATCH'
+                    };
+                }
+
+                if (selectedRole === 'admin' && userRole === 'patient') {
+                    return {
+                        success: false,
+                        message: 'This account is for Patients. Please use the Patient login.',
+                        error: 'ROLE_MISMATCH'
+                    };
+                }
+
+                if (selectedRole === 'government' && userRole !== 'government') {
+                    return {
+                        success: false,
+                        message: 'This account is not a Government account.',
+                        error: 'ROLE_MISMATCH'
+                    };
+                }
+
+                if (userRole === 'government' && selectedRole !== 'government') {
+                    return {
+                        success: false,
+                        message: 'Please use the Government login tab for this account.',
+                        error: 'ROLE_MISMATCH'
+                    };
+                }
+
+                // Save to storage
+                Helpers.setStorage(AppConfig.storage.authToken, data.token);
+                Helpers.setStorage(AppConfig.storage.userProfile, userProfile);
+
+                // Handle Remember Me
+                if (rememberMe) {
+                    Helpers.setStorage(AppConfig.storage.rememberMe, true);
+                    Helpers.setStorage(AppConfig.storage.rememberedIdentifier, identifier);
+                    Helpers.setStorage(AppConfig.storage.rememberedUserType, userType);
+                } else {
+                    this.clearRememberedCredentials();
+                }
+
+                this.currentUser = userProfile;
+
+                // Dispatch auth state changed event
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('authStateChanged', {
+                        detail: { authenticated: true, user: userProfile }
+                    }));
+                }
+
+                // PERFORMANCE: Prefetch critical data in background (non-blocking)
+                // This loads appointments, hospitals, and profile data in parallel
+                // so the dashboard renders instantly when user navigates
+                if (typeof PrefetchService !== 'undefined' &&
+                    typeof PrefetchService.prefetchAll === 'function') {
+                    PrefetchService.prefetchAll().catch(err => {
+                        console.warn('[Auth] Prefetch failed (non-critical):', err);
+                    });
+                }
+
+                return {
+                    success: true,
+                    message: 'Login successful',
+                    user: userProfile,
+                    token: data.token
+                };
+            }
+
+            return {
+                success: false,
+                message: data.message || 'Invalid credentials',
+                error: 'INVALID_CREDENTIALS'
+            };
+        } catch (error) {
+            console.error('Login error:', error);
+
+            // ── DEMO FALLBACK ──────────────────────────────────────────────
+            // When the Render backend is sleeping (503) or the request times
+            // out, fall back to locally-validated demo credentials so the
+            // app is always demonstrable without a live backend.
+            if (typeof DemoCredentials !== 'undefined' && DemoCredentials.enabled) {
+                console.warn('⚠️  Backend unreachable — attempting demo credential fallback');
+
+                const creds = DemoCredentials[userType];
+                if (creds && creds.identifier === identifier && creds.password === password) {
+                    console.log('✅ Demo credentials matched — logging in offline');
+
+                    // Build a fake but plausible user profile
+                    const demoNames = { patient: 'Rahul Kumar (Demo)', admin: 'AIIMS Admin (Demo)', government: 'Gov Official (Demo)' };
+                    const demoRoles = { patient: 'patient', admin: 'admin', government: 'government' };
+                    const fakeToken = 'demo_token_' + Date.now();
+
+                    const userProfile = {
+                        id: 'demo_' + userType,
+                        type: demoRoles[userType] || userType,
+                        identifier: identifier,
+                        name: demoNames[userType] || 'Demo User',
+                        mobile: '',
+                        email: '',
+                        loginTime: new Date().toISOString(),
+                        token: fakeToken,
+                        isDemo: true
+                    };
+
+                    // Persist session
+                    Helpers.setStorage(AppConfig.storage.authToken, fakeToken);
+                    Helpers.setStorage(AppConfig.storage.userProfile, userProfile);
+
+                    if (rememberMe) {
+                        Helpers.setStorage(AppConfig.storage.rememberMe, true);
+                        Helpers.setStorage(AppConfig.storage.rememberedIdentifier, identifier);
+                        Helpers.setStorage(AppConfig.storage.rememberedUserType, userType);
+                    } else {
+                        this.clearRememberedCredentials();
+                    }
+
+                    this.currentUser = userProfile;
+
+                    if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('authStateChanged', {
+                            detail: { authenticated: true, user: userProfile }
+                        }));
+                    }
+
+                    return {
+                        success: true,
+                        message: 'Demo login successful (backend offline)',
+                        user: userProfile,
+                        token: fakeToken
+                    };
+                }
+            }
+            // ── END DEMO FALLBACK ──────────────────────────────────────────
+
+            const isTimeout = error.name === 'AbortError';
+            return {
+                success: false,
+                message: isTimeout
+                    ? 'Server is starting up, please try again in a moment.'
+                    : 'Login failed. Please check your connection and try again.',
+                error: 'CONNECTION_ERROR'
+            };
+        }
+    },
+
+    /**
+     * Send OTP to mobile
+     * @param {string} mobile - Mobile number
+     * @returns {Promise<object>} OTP response
+     */
+    async sendOTP(mobile) {
+        await Helpers.delay(AppConfig.demo.mockDelay);
+
+        if (Helpers.validateMobile(mobile)) {
+            // In demo mode, always succeed
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+            // In real app, this would be sent via SMS
+            console.log('Demo OTP:', otp);
+
+            // Show toast with OTP in demo mode
+            if (AppConfig.demo.enabled) {
+                Helpers.showToast(`Demo OTP: ${otp}`, 'info', 5000);
+            }
+
+            return {
+                success: true,
+                message: 'OTP sent successfully',
+                otp: AppConfig.demo.enabled ? otp : undefined // Only return in demo
+            };
+        }
+
+        return {
+            success: false,
+            message: 'Invalid mobile number',
+            error: 'INVALID_MOBILE'
+        };
+    },
+
+    /**
+     * Verify OTP
+     * @param {string} mobile - Mobile number
+     * @param {string} otp - OTP to verify
+     * @returns {Promise<object>} Verification response
+     */
+    async verifyOTP(mobile, otp) {
+        await Helpers.delay(AppConfig.demo.mockDelay);
+
+        // In demo mode, accept any 6-digit OTP
+        if (AppConfig.demo.enabled && /^\d{6}$/.test(otp)) {
+            return {
+                success: true,
+                message: 'OTP verified successfully'
+            };
+        }
+
+        return {
+            success: false,
+            message: 'Invalid OTP',
+            error: 'INVALID_OTP'
+        };
+    },
+
+    /**
+     * Register new user
+     * @param {object} userData - User registration data
+     * @returns {Promise<object>} Registration response
+     */
+    async register(userData) {
+        try {
+            // Call real backend API
+            const response = await fetch('http://localhost:5000/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    abhaId: userData.abhaId,
+                    name: userData.name,
+                    mobile: userData.mobile,
+                    email: userData.email,
+                    password: userData.password,
+                    dateOfBirth: userData.dob,
+                    gender: userData.gender
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                return {
+                    success: true,
+                    message: 'Registration successful',
+                    user: data.user
+                };
+            }
+
+            return {
+                success: false,
+                message: data.message || 'Registration failed',
+                error: 'REGISTRATION_FAILED'
+            };
+        } catch (error) {
+            console.error('Registration error:', error);
+            return {
+                success: false,
+                message: 'Registration failed. Please check your connection and try again.',
+                error: 'CONNECTION_ERROR'
+            };
+        }
+    },
+
+    /**
+     * Logout current user
+     * @returns {Promise<object>} Logout response
+     */
+    async logout() {
+        await Helpers.delay(200);
+
+        // Clear storage
+        Helpers.removeStorage(AppConfig.storage.authToken);
+        Helpers.removeStorage(AppConfig.storage.userProfile);
+
+        // Clear remembered credentials
+        this.clearRememberedCredentials();
+
+        this.currentUser = null;
+
+        // Clear prefetch cache
+        if (typeof PrefetchService !== 'undefined' &&
+            typeof PrefetchService.clearCache === 'function') {
+            PrefetchService.clearCache();
+        }
+
+        // Dispatch auth state changed event
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('authStateChanged', {
+                detail: { authenticated: false, user: null }
+            }));
+        }
+
+        return {
+            success: true,
+            message: 'Logged out successfully'
+        };
+    },
+
+    /**
+     * Check if user is authenticated
+     * @returns {boolean} Authentication status
+     */
+    isAuthenticated() {
+        return this.currentUser !== null;
+    },
+
+    /**
+     * Get current user
+     * @returns {object|null} Current user or null
+     */
+    getCurrentUser() {
+        return this.currentUser;
+    },
+
+    /**
+     * Update user profile
+     * @param {object} updates - Profile updates
+     * @returns {Promise<object>} Update response
+     */
+    async updateProfile(updates) {
+        await Helpers.delay(AppConfig.demo.mockDelay);
+
+        if (!this.isAuthenticated()) {
+            return {
+                success: false,
+                message: 'Not authenticated',
+                error: 'NOT_AUTHENTICATED'
+            };
+        }
+
+        // Update current user
+        this.currentUser = {
+            ...this.currentUser,
+            ...updates
+        };
+
+        // Save to storage
+        Helpers.setStorage(AppConfig.storage.userProfile, this.currentUser);
+
+        return {
+            success: true,
+            message: 'Profile updated successfully',
+            user: this.currentUser
+        };
+    },
+
+    /**
+     * Get remembered credentials
+     * @returns {object|null} Remembered credentials or null
+     */
+    getRememberedCredentials() {
+        const rememberMe = Helpers.getStorage(AppConfig.storage.rememberMe);
+        if (!rememberMe) {
+            return null;
+        }
+
+        return {
+            identifier: Helpers.getStorage(AppConfig.storage.rememberedIdentifier),
+            userType: Helpers.getStorage(AppConfig.storage.rememberedUserType),
+            rememberMe: true
+        };
+    },
+
+    /**
+     * Clear remembered credentials
+     */
+    clearRememberedCredentials() {
+        Helpers.removeStorage(AppConfig.storage.rememberMe);
+        Helpers.removeStorage(AppConfig.storage.rememberedIdentifier);
+        Helpers.removeStorage(AppConfig.storage.rememberedUserType);
+    }
+};
+
+// Initialize on load
+if (typeof window !== 'undefined') {
+    window.addEventListener('DOMContentLoaded', () => {
+        AuthService.init();
+    });
+}
+
+// Export for use in other modules
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = AuthService;
+}

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link rel="icon" type="image/png" href="../assets/icons/favicon.png" />
+    <title>Patient Dashboard - SwasthyaSetu</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet" />
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#86efac",
+                        secondary: "#113841",
+                        "secondary-light": "#1d525e",
+                        "background-dark": "#0d2b32",
+                    },
+                    fontFamily: {
+                        display: ["Playfair Display", "serif"],
+                        sans: ["DM Sans", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components/chatbot.css">
+</head>
+
+<body class="bg-[#fffefc] dark:bg-background-dark font-sans antialiased text-gray-800 dark:text-gray-100 min-h-screen">
+
+    <!-- Navigation -->
+    <nav
+        class="w-full bg-secondary text-white py-4 px-6 md:px-12 flex justify-between items-center border-b border-white/10">
+        <a href="../index.html" class="flex items-center gap-2">
+            <img src="../assets/images/logo.png" alt="SwasthyaSetu Logo" class="h-8 w-auto">
+        </a>
+        <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
+            <a class="text-primary font-semibold" href="dashboard.html">Dashboard</a>
+            <a class="hover:text-primary transition-colors" href="hospitals.html">Hospitals</a>
+            <a class="hover:text-primary transition-colors" href="appointments.html">Appointments</a>
+            <a class="hover:text-primary transition-colors" href="profile.html">Profile</a>
+        </div>
+        <div class="flex items-center gap-4">
+            <button id="logout-btn"
+                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors text-sm font-semibold">
+                Logout
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Welcome Section -->
+        <div class="mb-8">
+            <h1 class="font-display text-4xl font-bold text-secondary dark:text-white mb-2">
+                Welcome, <span id="user-name">Patient</span>
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400">ABHA ID: <span id="user-abha" class="font-mono">--</span></p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Upcoming</p>
+                        <p class="text-2xl font-bold text-secondary dark:text-white" id="stat-appointments">0</p>
+                    </div>
+                    <span class="material-icons-outlined text-blue-500 text-4xl">event</span>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Appointments</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Total</p>
+                        <p class="text-2xl font-bold text-secondary dark:text-white" id="stat-records">0</p>
+                    </div>
+                    <span class="material-icons-outlined text-green-500 text-4xl">folder</span>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Medical Records</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Active</p>
+                        <p class="text-2xl font-bold text-secondary dark:text-white" id="stat-prescriptions">0</p>
+                    </div>
+                    <span class="material-icons-outlined text-purple-500 text-4xl">medication</span>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Prescriptions</p>
+            </div>
+        </div>
+
+        <!-- Appointments Section -->
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="font-display text-2xl font-bold text-secondary dark:text-white">Upcoming Appointments</h2>
+                <a href="book-appointment.html"
+                    class="bg-primary text-secondary px-4 py-2 rounded-lg font-semibold hover:bg-green-400 transition-colors flex items-center gap-2">
+                    <span class="material-icons-outlined text-sm">add_circle</span>
+                    Book New
+                </a>
+            </div>
+            <div id="appointments-list" class="space-y-4">
+                <!-- Appointments will be loaded here -->
+                <p class="text-gray-500 text-center py-8">Loading appointments...</p>
+            </div>
+        </div>
+
+        <!-- Medical Records Section -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="font-display text-2xl font-bold text-secondary dark:text-white">Recent Medical Records</h2>
+                <button class="text-secondary dark:text-primary font-semibold hover:underline">
+                    View All
+                </button>
+            </div>
+            <div id="records-list" class="space-y-4">
+                <!-- Records will be loaded here -->
+                <p class="text-gray-500 text-center py-8">Loading medical records...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Emergency Modal -->
+    <div id="emergency-modal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div
+            class="modal-content bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-red-500"></div>
+            <button id="close-modal-btn"
+                class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                <span class="material-icons-outlined">close</span>
+            </button>
+
+            <div class="text-center mb-6 pt-2">
+                <div
+                    class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                    <span class="material-icons-outlined text-red-600 text-3xl">emergency</span>
+                </div>
+                <h3 class="font-display text-2xl font-bold text-gray-900 dark:text-white">Emergency Support</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Select an option for immediate assistance</p>
+            </div>
+
+            <div class="space-y-3">
+                <button
+                    class="w-full flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-red-500/30 group">
+                    <span class="material-icons-outlined text-2xl group-hover:animate-bounce">airport_shuttle</span>
+                    <span class="text-lg whitespace-nowrap">Get an Ambulance</span>
+                </button>
+            </div>
+
+            <div class="mt-6 text-center">
+                <p class="text-xs text-gray-400">By using this service, you agree to share your location for emergency
+                    response.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="../js/config/constants.js"></script>
+    <script src="../js/config/app-config.js"></script>
+    <script src="../js/utils/app-utils.js"></script>
+    <script src="../js/services/api.js"></script>
+    <script src="../js/services/auth.js"></script>
+    <script src="../js/components/navigation.js"></script>
+
+    <script>
+        // Dashboard Logic
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize auth service first to load user from storage
+            AuthService.init();
+
+            // Check authentication
+            if (!AuthService.isAuthenticated()) {
+                window.location.href = '../index.html';
+                return;
+            }
+
+            const user = AuthService.getCurrentUser();
+
+            // Check if user is a patient
+            if (user.type === 'admin') {
+                window.location.href = 'admin-dashboard.html';
+                return;
+            }
+
+            // Update user info
+            document.getElementById('user-name').textContent = user.name || 'Patient';
+            document.getElementById('user-abha').textContent = user.identifier || '--';
+
+            // Load data
+            await loadDashboardData();
+
+            // Logout handler
+            document.getElementById('logout-btn').addEventListener('click', async () => {
+                await AuthService.logout();
+                Helpers.showToast('Logged out successfully', 'success');
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 1000);
+            });
+
+            // Initialize Navigation (for emergency modal)
+            if (typeof Navigation !== 'undefined') {
+                new Navigation();
+            }
+        });
+
+        async function loadDashboardData() {
+            try {
+                // Load appointments
+                const appointmentsResponse = await APIService.getAppointments();
+                if (appointmentsResponse.success) {
+                    displayAppointments(appointmentsResponse.data);
+                    document.getElementById('stat-appointments').textContent = appointmentsResponse.data.length;
+                }
+
+                // Load medical records
+                const recordsResponse = await APIService.getMedicalRecords();
+                if (recordsResponse.success) {
+                    displayRecords(recordsResponse.data);
+                    document.getElementById('stat-records').textContent = recordsResponse.data.length;
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        function displayAppointments(appointments) {
+            const container = document.getElementById('appointments-list');
+
+            if (appointments.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No upcoming appointments</p>';
+                return;
+            }
+
+            container.innerHTML = appointments.map(apt => {
+                const hasDocs = apt.documents && apt.documents.length > 0;
+                const isCancelled = apt.status === 'cancelled';
+
+                // Status badge styling
+                let statusBadgeClass = 'bg-yellow-100 text-yellow-700';
+                if (apt.status === 'confirmed') statusBadgeClass = 'bg-green-100 text-green-700';
+                if (apt.status === 'completed') statusBadgeClass = 'bg-blue-100 text-blue-700';
+                if (isCancelled) statusBadgeClass = 'bg-red-100 text-red-700';
+
+                return `
+                <div class="flex flex-col p-4 bg-gray-50 dark:bg-gray-700 rounded-lg ${isCancelled ? 'opacity-75' : ''}">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full ${isCancelled ? 'bg-red-100 dark:bg-red-900' : 'bg-blue-100 dark:bg-blue-900'} flex items-center justify-center">
+                                <span class="material-icons-outlined ${isCancelled ? 'text-red-600 dark:text-red-300' : 'text-blue-600 dark:text-blue-300'}">${isCancelled ? 'event_busy' : 'event'}</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-secondary dark:text-white">${apt.doctor}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">${apt.specialty} - ${apt.hospital}</p>
+                                <p class="text-xs text-gray-500">${Helpers.formatDate(apt.date)} at ${apt.time}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            ${hasDocs ?
+                        `<button onclick="openDocsModal('${apt._id}')" class="px-3 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-semibold hover:bg-purple-200">
+                                    View Docs
+                                </button>` : ''
+                    }
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusBadgeClass}">
+                                ${apt.status}
+                            </span>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold ${apt.type === 'telemedicine' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}">
+                                ${apt.type}
+                            </span>
+                        </div>
+                    </div>
+                    ${isCancelled && apt.cancelReason ? `
+                        <div class="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                            <div class="flex items-start gap-2">
+                                <span class="material-icons-outlined text-red-500 text-sm mt-0.5">info</span>
+                                <div>
+                                    <p class="text-xs font-semibold text-red-700 dark:text-red-400">Cancellation Reason:</p>
+                                    <p class="text-sm text-red-600 dark:text-red-300">${apt.cancelReason}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `}).join('');
+        }
+
+        function displayRecords(records) {
+            const container = document.getElementById('records-list');
+
+            if (records.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No medical records found</p>';
+                return;
+            }
+
+            container.innerHTML = records.slice(0, 5).map(record => `
+                <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                            <span class="material-icons-outlined text-green-600 dark:text-green-300">folder</span>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-secondary dark:text-white">${record.diagnosis}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">${record.hospital} - Dr. ${record.doctor}</p>
+                            <p class="text-xs text-gray-500">${Helpers.formatDate(record.date)}</p>
+                        </div>
+                    </div>
+                    <button class="text-secondary dark:text-primary hover:underline text-sm font-semibold">
+                        View Details
+                    </button>
+                </div>
+            `).join('');
+        }
+    </script>
+
+
+    <!-- Booking Wizard Modal -->
+
+    <!-- Docs Modal -->
+    <div id="docs-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-black/50" onclick="closeDocsModal()"></div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md z-10 mx-4 relative shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Medical Documents</h3>
+                <button onclick="closeDocsModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                    <span class="material-icons-outlined">close</span>
+                </button>
+            </div>
+            <ul id="patient-docs-list" class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                <!-- Docs go here -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function openDocsModal(aptId) {
+            // Re-fetch to be safe and simple
+            APIService.getAppointments().then(res => {
+                if (res.success) {
+                    const apt = res.data.find(a => a._id === aptId);
+                    if (!apt) return;
+
+                    const list = document.getElementById('patient-docs-list');
+                    list.innerHTML = '';
+
+                    if (!apt.documents || apt.documents.length === 0) {
+                        list.innerHTML = '<li class="text-gray-500 text-sm">No documents found.</li>';
+                    } else {
+                        apt.documents.forEach(doc => {
+                            const li = document.createElement('li');
+                            li.className = 'flex items-center justify-between text-sm p-3 bg-gray-50 dark:bg-gray-700 rounded-lg';
+                            li.innerHTML = `
+                                <div class="flex items-center gap-3">
+                                    <span class="material-icons-outlined text-purple-500">description</span>
+                                    <div>
+                                        <p class="font-medium dark:text-white capitalize">${doc.type}</p>
+                                        <p class="text-xs text-gray-500">${new Date(doc.uploadedAt).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                                <a href="${doc.url}" target="_blank" class="text-primary hover:underline text-sm font-medium flex items-center gap-1">
+                                    <span>Download</span>
+                                    <span class="material-icons-outlined text-sm">open_in_new</span>
+                                </a>
+                            `;
+                            list.appendChild(li);
+                        });
+                    }
+                    document.getElementById('docs-modal').classList.remove('hidden');
+                }
+            });
+        }
+
+        function closeDocsModal() {
+            document.getElementById('docs-modal').classList.add('hidden');
+        }
+    </script>
+
+    <!-- Health Assistant Chatbot -->
+    <script src="../js/config/gemini-config.js"></script>
+    <script src="../js/components/chatbot.js"></script>
+</body>
+
+</html>

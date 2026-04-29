@@ -1,0 +1,1182 @@
+/**
+ * Modern Interactive India Map Styles
+ * With full dark mode support
+ */
+
+/* Map Container */
+#india-map {
+    background: transparent;
+    /* Removed gradients/borders to blend with page */
+    border-radius: 0;
+    overflow: visible;
+    position: relative;
+    box-shadow: none;
+}
+
+/* Dark Mode Map */
+/* Dark Mode Map */
+.dark #india-map {
+    background: transparent;
+    box-shadow: none;
+}
+
+/* Dark Mode Map */
+
+
+/* ============================================ */
+/* CUSTOM SVG MAP STYLES                       */
+/* ============================================ */
+
+/* SVG Container */
+.india-svg-map {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.15));
+    /* Initial appear animation */
+    animation: map-enter 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes map-enter {
+    from {
+        transform: scale(0.9) translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+
+
+/* Base State Path Style */
+.state-path {
+    stroke: #ffffff;
+    stroke-width: 1;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    stroke-linecap: round;
+    transition: transform 0.3s ease, filter 0.3s ease;
+    transform-origin: center;
+    transform-box: fill-box;
+    /* Key fix for SVG */
+    cursor: pointer;
+    /* Optimize painting */
+    will-change: transform, filter;
+}
+
+.dark .state-path {
+    stroke: #334155;
+    stroke-width: 0.5;
+}
+
+/* ============================================ */
+/* THE "CAKE SLICE LIFT" HOVER EFFECT          */
+/* ============================================ */
+
+.state-path:hover,
+.state-path.active {
+    /* Lift Up */
+    transform: translateY(-8px) scale(1.04);
+
+    /* Soft Drop Shadow for Depth */
+    filter:
+        drop-shadow(0 15px 15px rgba(0, 0, 0, 0.3)) brightness(1.1);
+
+    /* Elevate Z-Index Visual via Paint Order (SVG specific trick doesn't apply to z-index)
+       Note: JS handles re-appending to bring to front for true z-index
+    */
+    stroke: #ffffff;
+    stroke-width: 2;
+    z-index: 100;
+    /* Only works if positioned, but SVG element order matters more */
+}
+
+.state-path.active {
+    filter:
+        drop-shadow(0 10px 25px rgba(17, 56, 65, 0.5)) brightness(1.1);
+    stroke: #fbbf24;
+    /* Gold border for active */
+    stroke-width: 3;
+}
+
+.dark .state-path:hover,
+.dark .state-path.active {
+    filter:
+        drop-shadow(0 15px 25px rgba(0, 0, 0, 0.6)) brightness(1.15);
+    stroke: #86efac;
+}
+
+/* Loader Styles */
+.map-loader {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #113841;
+}
+
+.dark .map-loader {
+    color: #86efac;
+}
+
+/* Tooltip */
+.map-tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(4px);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transform: translate(-50%, -120%);
+    /* Center above cursor */
+    display: none;
+}
+
+/* ============================================ */
+/* ANIMATED POPOUT MODAL                       */
+/* ============================================ */
+
+.state-popout-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.state-popout-modal.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.popout-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(10px);
+}
+
+.dark .popout-backdrop {
+    background: rgba(0, 0, 0, 0.85);
+}
+
+/* Main Container */
+.popout-container {
+    position: relative;
+    width: 95%;
+    max-width: 1200px;
+    min-height: 620px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Live Population Box - LARGE */
+
+
+/* Center Column & Visuals */
+.popout-center-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    margin-top: -40px;
+    /* Slight visual overlap */
+}
+
+.popout-state-visual {
+    width: 280px;
+    height: 280px;
+    background: #ffffff;
+    /* White background as requested */
+    border-radius: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.2),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+    /* Subtle border */
+    position: relative;
+    margin-bottom: 1.5rem;
+    overflow: visible;
+    /* Allow SVG to pop if needed */
+    animation: popout-enter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.dark .popout-state-visual {
+    background: #1e293b;
+    /* Dark mode fallback or keep white? User said "white". */
+    /* If user specifically asked for white, likely for contrast with the map.
+       But keeping it white in dark mode might be too bright.
+       However, strict request "centre the box background should be white".
+       I will keep it white for now to strictly follow instruction,
+       or maybe separate dark mode if sensible.
+       Let's stick to white for base, maybe dark can have text adjustment.
+       Actually, the SVG inside is colored. White bg is fine. */
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    box-shadow:
+        0 30px 60px -15px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(134, 239, 172, 0.3);
+}
+
+@keyframes popout-enter {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.popout-svg {
+    width: 220px;
+    height: 220px;
+    filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.3));
+}
+
+.state-cutout-path {
+    animation: path-draw 0.8s ease-out 0.3s both;
+}
+
+@keyframes path-draw {
+    0% {
+        opacity: 0;
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+    }
+
+    100% {
+        opacity: 1;
+        stroke-dashoffset: 0;
+    }
+}
+
+.state-name-overlay {
+    background: white;
+    color: #113841;
+    padding: 14px 36px;
+    border-radius: 2rem;
+    font-weight: 700;
+    font-size: 1.35rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+    margin-top: 20px;
+    animation: fade-up 0.5s ease 0.4s both;
+}
+
+.dark .state-name-overlay {
+    background: #1e293b;
+    color: #86efac;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes fade-up {
+    0% {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Centered Action Button */
+.popout-action-btn.centered {
+    margin-top: 16px;
+    animation: button-bounce 0.6s ease 0.6s both;
+}
+
+@keyframes button-bounce {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+    }
+
+    60% {
+        transform: translateY(-5px) scale(1.02);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ============================================ */
+/* DATA CONNECTORS & BOXES                     */
+/* ============================================ */
+
+.data-connector {
+    position: absolute;
+    display: flex;
+    align-items: center;
+}
+
+.data-connector.top-right {
+    top: 40px;
+    left: calc(50% + 150px);
+    animation: connector-appear 0.6s ease 0.5s both;
+}
+
+.data-connector.bottom-right {
+    bottom: 80px;
+    left: calc(50% + 150px);
+    animation: connector-appear 0.6s ease 0.6s both;
+}
+
+.data-connector.left-side {
+    top: 50%;
+    right: calc(50% + 150px);
+    transform: translateY(-50%);
+    flex-direction: row-reverse;
+    animation: connector-appear 0.6s ease 0.7s both;
+}
+
+@keyframes connector-appear {
+    0% {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.data-connector.left-side {
+    animation-name: connector-appear-left;
+}
+
+@keyframes connector-appear-left {
+    0% {
+        opacity: 0;
+        transform: translateY(-50%) translateX(30px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+    }
+}
+
+.connector-line {
+    width: 55px;
+    height: 3px;
+    background: linear-gradient(90deg, #86efac, rgba(134, 239, 172, 0.3));
+    position: relative;
+}
+
+.connector-line::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background: #86efac;
+    border-radius: 50%;
+    box-shadow: 0 0 15px #86efac;
+}
+
+.data-connector.left-side .connector-line {
+    background: linear-gradient(-90deg, #86efac, rgba(134, 239, 172, 0.3));
+}
+
+.data-connector.left-side .connector-line::before {
+    left: auto;
+    right: 0;
+}
+
+/* Data Boxes */
+/* Data Boxes / Dashboard Cards */
+.data-box,
+.dashboard-card {
+    /* Inactive State (Default) */
+    background: rgba(255, 255, 255, 0.08);
+    /* Transparent dark */
+    backdrop-filter: blur(12px);
+    border-radius: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    min-width: 220px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    /* White text for inactive */
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Active State */
+/* Active State - Matches Disease Stats background but with stronger depth */
+.data-box.active {
+    background: rgba(255, 255, 255, 0.08);
+    /* Same as inactive */
+    backdrop-filter: blur(12px);
+    color: #ffffff;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    /* Stronger border for active */
+    transform: translateY(-5px);
+}
+
+.dark .data-box {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .data-box.active {
+    background: rgba(15, 23, 42, 0.8);
+    /* Slightly darker */
+    color: #ffffff;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(134, 239, 172, 0.5);
+}
+
+/* Adjust child colors based on active state */
+/* Ensure white text for all states */
+.data-box .data-box-header,
+.data-box .data-box-value,
+.data-box .data-box-sub,
+.data-box .stat-label {
+    color: #ffffff !important;
+}
+
+.data-box .material-icons-outlined {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Live Population Box - LARGE */
+.data-box.large {
+    min-width: 280px;
+    padding: 1.5rem 2rem;
+}
+
+.data-box-header {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dark .data-box-header {
+    color: #94a3b8;
+}
+
+.data-box-header .material-icons-outlined {
+    font-size: 20px;
+    color: #113841;
+}
+
+.dark .data-box-header .material-icons-outlined {
+    color: #86efac;
+}
+
+.pulse-dot {
+    width: 12px;
+    height: 12px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse-live 1.5s infinite;
+}
+
+@keyframes pulse-live {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(1.4);
+    }
+}
+
+.data-box-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #113841;
+    /* Dark Teal for visibility on light background */
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dark .data-box-value {
+    color: #f1f5f9;
+}
+
+.data-box-value.large {
+    font-size: 2.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.data-box-value .stars {
+    font-size: 1rem;
+    color: #fbbf24;
+}
+
+.data-box-sub {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-top: 0.5rem;
+}
+
+.dark .data-box-sub {
+    color: #94a3b8;
+}
+
+/* Born/Died Grid */
+.data-box-sub-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stat-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.85);
+    /* High Contrast */
+    color: #111;
+    font-weight: 600;
+    margin-bottom: 4px;
+    /* separation */
+}
+
+.dark .stat-row {
+    background: rgba(255, 255, 255, 0.85);
+    /* Keep high contrast in dark mode too */
+    color: #111;
+}
+
+.stat-row .material-icons-outlined {
+    font-size: 20px;
+    color: #111;
+    /* Dark icon */
+}
+
+.stat-row .stat-label {
+    flex: 1;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #334155;
+    /* Dark slate for readability */
+}
+
+.dark .stat-row .stat-label {
+    color: #1e293b;
+}
+
+.stat-row .stat-number {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.stat-row.born {
+    background: #dcfce7;
+    /* Light Green */
+}
+
+.dark .stat-row.born {
+    background: rgba(34, 197, 94, 0.2);
+}
+
+.stat-row.born .material-icons-outlined,
+.stat-row.born .stat-number {
+    color: #15803d;
+    /* Dark Green Text */
+}
+
+.dark .stat-row.born .material-icons-outlined,
+.dark .stat-row.born .stat-number {
+    color: #4ade80;
+}
+
+.stat-row.died {
+    background: #fee2e2;
+    /* Light Red */
+}
+
+.dark .stat-row.died {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.stat-row.died .material-icons-outlined,
+.stat-row.died .stat-number {
+    color: #b91c1c;
+    /* Dark Red Text */
+}
+
+.dark .stat-row.died .material-icons-outlined,
+.dark .stat-row.died .stat-number {
+    color: #f87171;
+}
+
+/* Population Box / Review Box */
+.live-population-box {
+    background: #ecfdf5;
+    /* Solid light mint */
+    border: 1px solid #86efac;
+    backdrop-filter: none;
+    /* Remove blur/haze */
+}
+
+.dark .live-population-box {
+    background: rgba(6, 78, 59, 0.4);
+    /* Darker green tint */
+    border-color: #059669;
+}
+
+/* Hospital Rating Box */
+.hospital-rating-box {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-color: #86efac;
+}
+
+.dark .hospital-rating-box {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.03) 100%);
+    border-color: rgba(134, 239, 172, 0.3);
+}
+
+/* Disease Box */
+.disease-box {
+    min-width: 400px;
+    max-width: 450px;
+}
+
+/* Disease Stats Grid */
+.disease-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.dark .disease-stats-grid {
+    border-bottom-color: #334155;
+}
+
+.disease-stat {
+    text-align: center;
+    padding: 0.875rem 0.5rem;
+    background: #f8fafc;
+    border-radius: 0.75rem;
+}
+
+.dark .disease-stat {
+    background: #334155;
+}
+
+.disease-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: block;
+}
+
+.disease-stat-label {
+    font-size: 0.65rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+    display: block;
+    font-weight: 600;
+}
+
+.dark .disease-stat-label {
+    color: #94a3b8;
+}
+
+.disease-stat.active {
+    background: #fff7ed;
+}
+
+.dark .disease-stat.active {
+    background: rgba(249, 115, 22, 0.15);
+}
+
+.disease-stat.active .disease-stat-value {
+    color: #f97316;
+}
+
+.disease-stat.recovered {
+    background: #f0fdf4;
+}
+
+.dark .disease-stat.recovered {
+    background: rgba(34, 197, 94, 0.15);
+}
+
+.disease-stat.recovered .disease-stat-value {
+    color: #22c55e;
+}
+
+.disease-stat.deceased {
+    background: #fef2f2;
+}
+
+.dark .disease-stat.deceased {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.disease-stat.deceased .disease-stat-value {
+    color: #ef4444;
+}
+
+.disease-chart-container {
+    height: 280px;
+}
+
+/* Close Button */
+.popout-close {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    width: 54px;
+    height: 54px;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.dark .popout-close {
+    background: #1e293b;
+}
+
+.popout-close:hover {
+    transform: scale(1.1);
+}
+
+.popout-close .material-icons-outlined {
+    font-size: 30px;
+    color: #113841;
+}
+
+.dark .popout-close .material-icons-outlined {
+    color: #e2e8f0;
+}
+
+/* Action Button */
+.popout-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #113841;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(17, 56, 65, 0.4);
+    transition: all 0.25s;
+}
+
+.dark .popout-action-btn {
+    background: #86efac;
+    color: #113841;
+    box-shadow: 0 6px 20px rgba(134, 239, 172, 0.3);
+}
+
+.popout-action-btn:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(17, 56, 65, 0.5);
+}
+
+.dark .popout-action-btn:hover {
+    background: #a7f3d0;
+    box-shadow: 0 10px 30px rgba(134, 239, 172, 0.4);
+}
+
+.popout-action-btn .material-icons-outlined {
+    font-size: 22px;
+}
+
+/* ============================================ */
+/* HOSPITALS MODAL                             */
+/* ============================================ */
+
+.hospitals-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.hospitals-modal.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.hospitals-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.hospitals-content {
+    position: relative;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    background: white;
+    border-radius: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    animation: slide-up 0.3s ease;
+}
+
+.dark .hospitals-content {
+    background: #1e293b;
+}
+
+@keyframes slide-up {
+    0% {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.hospitals-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.dark .hospitals-header {
+    border-bottom-color: #334155;
+}
+
+.hospitals-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #113841;
+    margin: 0;
+}
+
+.dark .hospitals-header h2 {
+    color: #f1f5f9;
+}
+
+.hospitals-close {
+    width: 40px;
+    height: 40px;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dark .hospitals-close {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+.hospitals-close:hover {
+    background: #e2e8f0;
+}
+
+.dark .hospitals-close:hover {
+    background: #475569;
+}
+
+.hospitals-search {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.dark .hospitals-search {
+    background: #0f172a;
+    border-bottom-color: #334155;
+}
+
+.hospitals-search .material-icons-outlined {
+    color: #94a3b8;
+}
+
+.hospitals-search input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    outline: none;
+    color: #113841;
+}
+
+.dark .hospitals-search input {
+    color: #e2e8f0;
+}
+
+.hospitals-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.loading-hospitals {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: #64748b;
+}
+
+.dark .loading-hospitals {
+    color: #94a3b8;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #113841;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+.dark .spinner {
+    border-color: #334155;
+    border-top-color: #86efac;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.no-hospitals {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem;
+    color: #64748b;
+    text-align: center;
+}
+
+.no-hospitals .material-icons-outlined {
+    font-size: 48px;
+    margin-bottom: 1rem;
+    color: #cbd5e1;
+}
+
+.hospital-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 1rem;
+    background: #f8fafc;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s;
+}
+
+.dark .hospital-card {
+    background: #334155;
+}
+
+.hospital-card:hover {
+    background: #f1f5f9;
+}
+
+.dark .hospital-card:hover {
+    background: #475569;
+}
+
+.hospital-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #113841, #1d525e);
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dark .hospital-icon {
+    background: linear-gradient(135deg, #86efac, #22c55e);
+}
+
+.hospital-icon .material-icons-outlined {
+    color: white;
+    font-size: 24px;
+}
+
+.dark .hospital-icon .material-icons-outlined {
+    color: #113841;
+}
+
+.hospital-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.hospital-info h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #113841;
+    margin: 0 0 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dark .hospital-info h3 {
+    color: #f1f5f9;
+}
+
+.hospital-address,
+.hospital-phone {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.dark .hospital-address,
+.dark .hospital-phone {
+    color: #94a3b8;
+}
+
+.navigate-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: #113841;
+    color: white;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+.dark .navigate-btn {
+    background: #86efac;
+    color: #113841;
+}
+
+.navigate-btn:hover {
+    transform: scale(1.05);
+}
+
+.navigate-btn .material-icons-outlined {
+    font-size: 18px;
+}
+
+/* ============================================ */
+/* RESPONSIVE                                  */
+/* ============================================ */
+
+@media (max-width: 1200px) {
+    .popout-container {
+        flex-direction: column;
+        height: auto;
+        min-height: auto;
+        padding: 2rem;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .popout-center-column {
+        margin-bottom: 2rem;
+    }
+
+    .data-connector {
+        position: relative !important;
+        top: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
+        transform: none !important;
+        margin: 1rem 0;
+    }
+
+    .connector-line {
+        display: none;
+    }
+
+    .popout-state-visual {
+        width: 220px;
+        height: 220px;
+    }
+
+    .popout-svg {
+        width: 160px;
+        height: 160px;
+    }
+
+    .disease-box {
+        min-width: 300px;
+    }
+}

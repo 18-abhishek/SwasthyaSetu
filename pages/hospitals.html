@@ -1,0 +1,343 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link rel="icon" type="image/png" href="../assets/icons/favicon.png" />
+    <title>Hospital Directory - SwasthyaSetu</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet" />
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#86efac",
+                        secondary: "#113841",
+                        "secondary-light": "#1d525e",
+                        "background-dark": "#0d2b32",
+                        "accent-purple": "#e0defc",
+                        "accent-green": "#e6f0c2",
+                        "accent-blue": "#d0e8f2",
+                        "health-orange": "#f78e69",
+                    },
+                    fontFamily: {
+                        display: ["Playfair Display", "serif"],
+                        sans: ["DM Sans", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                        'xl': '1rem',
+                        '2xl': '1.5rem',
+                        '3xl': '2rem',
+                    },
+                },
+            },
+        };
+    </script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components/chatbot.css">
+</head>
+
+<body class="bg-[#fffefc] dark:bg-background-dark font-sans antialiased text-gray-800 dark:text-gray-100 min-h-screen">
+
+    <!-- Navigation -->
+    <nav
+        class="w-full bg-secondary text-white py-4 px-6 md:px-12 flex justify-between items-center border-b border-white/10">
+        <a href="../index.html" class="flex items-center gap-2">
+            <img src="../assets/images/logo.png" alt="SwasthyaSetu Logo" class="h-8 w-auto">
+        </a>
+        <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
+            <a class="hover:text-primary transition-colors" href="dashboard.html">Dashboard</a>
+            <a class="text-primary font-semibold" href="hospitals.html">Hospitals</a>
+            <a class="hover:text-primary transition-colors" href="appointments.html">Appointments</a>
+            <a class="hover:text-primary transition-colors" href="profile.html">Profile</a>
+        </div>
+        <div class="flex items-center gap-4">
+            <button id="logout-btn"
+                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors text-sm font-semibold">
+                Logout
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <h1 class="font-display text-4xl md:text-5xl font-bold text-secondary dark:text-white mb-3">
+                Hospital Network
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400 text-lg">
+                Find hospitals, check resource availability, and connect with healthcare providers across India
+            </p>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+            <div class="grid md:grid-cols-4 gap-4">
+                <!-- Search -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search
+                        Hospitals</label>
+                    <div class="relative">
+                        <span class="material-icons-outlined absolute left-3 top-3 text-gray-400">search</span>
+                        <input type="text" id="search-input"
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-secondary"
+                            placeholder="Search by name, city, or specialty...">
+                    </div>
+                </div>
+
+                <!-- Location Button (New) -->
+                <div class="flex items-end">
+                    <button id="use-location-btn"
+                        class="w-full px-4 py-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors flex items-center justify-center gap-2 font-medium">
+                        <span class="material-icons-outlined">my_location</span>
+                        Use Current Location
+                    </button>
+                </div>
+
+                <!-- City Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">City</label>
+                    <select id="city-filter"
+                        class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-secondary">
+                        <option value="">All Cities</option>
+                        <option value="Delhi">Delhi</option>
+                        <option value="Mumbai">Mumbai</option>
+                        <option value="Bangalore">Bangalore</option>
+                        <option value="Chennai">Chennai</option>
+                        <option value="Kolkata">Kolkata</option>
+                        <option value="Hyderabad">Hyderabad</option>
+                    </select>
+                </div>
+
+                <!-- Type Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
+                    <select id="type-filter"
+                        class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-secondary">
+                        <option value="">All Types</option>
+                        <option value="Government">Government</option>
+                        <option value="Private">Private</option>
+                        <option value="Trust">Trust</option>
+                    </select>
+                </div>
+            </div>
+
+
+        </div>
+
+
+
+        <!-- Hospital List -->
+        <div class="mb-4 flex justify-between items-center">
+            <h2 class="font-display text-2xl font-bold text-secondary dark:text-white">
+                Available Hospitals <span class="text-gray-500 text-lg" id="result-count"></span>
+            </h2>
+            <div class="flex gap-2">
+                <button
+                    class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <span class="material-icons-outlined text-sm align-middle">sort</span> Sort
+                </button>
+            </div>
+        </div>
+
+        <div id="hospitals-list" class="space-y-4">
+            <!-- Hospitals will be loaded here -->
+            <p class="text-center text-gray-500 py-8">Loading hospitals...</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-secondary text-white py-12 px-6 border-t border-white/10 mt-16">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-center md:text-left">
+                <a href="../index.html" class="flex items-center justify-center md:justify-start gap-2 mb-2">
+                    <img src="../assets/images/logo.png" alt="SwasthyaSetu Logo" class="h-6 w-auto">
+                </a>
+                <p class="text-sm text-gray-400">© 2024 Ministry of Health & Family Welfare. All Rights Reserved.</p>
+            </div>
+            <div class="flex gap-6 text-gray-400">
+                <a class="hover:text-white transition-colors" href="#">Accessibility</a>
+                <a class="hover:text-white transition-colors" href="#">Contact Us</a>
+                <a class="hover:text-white transition-colors" href="#">Sitemap</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Emergency Modal -->
+    <div id="emergency-modal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center">
+        <!-- ... existing emergency modal content ... -->
+        <div
+            class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-sm w-full mx-4 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-red-500"></div>
+            <button id="close-modal-btn"
+                class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                <span class="material-icons-outlined">close</span>
+            </button>
+
+            <div class="text-center mb-6 pt-2">
+                <div
+                    class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                    <span class="material-icons-outlined text-red-600 text-3xl">emergency</span>
+                </div>
+                <h3 class="font-display text-2xl font-bold text-gray-900 dark:text-white">Emergency Support</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Select an option for immediate assistance</p>
+            </div>
+
+            <div class="space-y-3">
+                <button
+                    class="w-full flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-red-500/30 group">
+                    <span class="material-icons-outlined text-2xl group-hover:animate-bounce">airport_shuttle</span>
+                    <span class="text-lg whitespace-nowrap">Get an Ambulance</span>
+                </button>
+            </div>
+
+            <div class="mt-6 text-center">
+                <p class="text-xs text-gray-400">By using this service, you agree to share your location for emergency
+                    response.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hospital Details Modal -->
+    <div id="hospital-modal"
+        class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+
+            <!-- Modal Header -->
+            <div
+                class="sticky top-0 bg-white dark:bg-gray-800 z-10 border-b border-gray-100 dark:border-gray-700 p-6 flex justify-between items-start">
+                <div>
+                    <h2 id="modal-hospital-name"
+                        class="font-display text-2xl font-bold text-secondary dark:text-white mb-1">Hospital Name</h2>
+                    <p id="modal-hospital-address"
+                        class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <span class="material-icons-outlined text-sm">location_on</span>
+                        123, Street Name, City
+                    </p>
+                </div>
+                <button id="close-hospital-modal"
+                    class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                    <span class="material-icons-outlined text-gray-500 dark:text-gray-400">close</span>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 space-y-8">
+
+                <!-- Status & Type Tags -->
+                <div class="flex flex-wrap gap-2" id="modal-tags">
+                    <!-- Populated via JS -->
+                </div>
+
+                <!-- Resource Dashboard -->
+                <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-5 border border-gray-100 dark:border-gray-700">
+                    <h3 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                        <span class="material-icons-outlined text-blue-500">analytics</span> Real-time Availability
+                    </h3>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-white dark:bg-gray-800 p-3 rounded-lg text-center shadow-sm">
+                            <span class="block text-2xl font-bold text-blue-600 dark:text-blue-400"
+                                id="modal-total-beds">--</span>
+                            <span class="text-xs text-gray-500 uppercase tracking-wide">Total Beds</span>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-3 rounded-lg text-center shadow-sm">
+                            <span class="block text-2xl font-bold text-green-600 dark:text-green-400"
+                                id="modal-avail-beds">--</span>
+                            <span class="text-xs text-gray-500 uppercase tracking-wide">Available</span>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-3 rounded-lg text-center shadow-sm">
+                            <span class="block text-2xl font-bold text-orange-600 dark:text-orange-400"
+                                id="modal-icu-beds">--</span>
+                            <span class="text-xs text-gray-500 uppercase tracking-wide">ICU Beds</span>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-3 rounded-lg text-center shadow-sm">
+                            <span class="block text-2xl font-bold text-purple-600 dark:text-purple-400"
+                                id="modal-ventilators">--</span>
+                            <span class="text-xs text-gray-500 uppercase tracking-wide">Ventilators</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Specialties/Services -->
+                <div>
+                    <h3 class="font-bold text-gray-800 dark:text-white mb-3">Key Services</h3>
+                    <div class="flex flex-wrap gap-2" id="modal-services">
+                        <span
+                            class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full text-sm">Emergency
+                            Care</span>
+                        <span
+                            class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full text-sm">Pharmacy</span>
+                        <span
+                            class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full text-sm">Laboratory</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid md:grid-cols-2 gap-4 pt-4">
+                    <a id="modal-map-link" href="#" target="_blank"
+                        class="flex items-center justify-center gap-2 py-3.5 px-6 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-white font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <span class="material-icons-outlined text-blue-500">directions</span>
+                        Navigate
+                    </a>
+                    <button id="modal-call-btn"
+                        class="flex items-center justify-center gap-2 py-3.5 px-6 bg-secondary text-white rounded-xl font-semibold hover:bg-secondary-light transition-colors shadow-lg shadow-secondary/20">
+                        <span class="material-icons-outlined">call</span>
+                        Call Hospital
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="../js/config/constants.js"></script>
+    <script src="../js/config/app-config.js"></script>
+    <script src="../js/utils/app-utils.js"></script>
+    <script src="../js/services/api.js"></script>
+    <script src="../js/services/auth.js"></script>
+    <script src="../js/components/navigation.js"></script>
+
+    <script src="../js/pages/hospitals.js"></script>
+
+    <!-- Chatbot Scripts -->
+    <script src="../js/config/gemini-config.js"></script>
+    <script src="../js/services/chatbot-context.js"></script>
+    <script src="../js/components/chatbot.js"></script>
+    <script>
+        // Initialize chatbot after all scripts load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (typeof Chatbot !== 'undefined') {
+                    window.chatbotInstance = new Chatbot();
+                    console.log('Chatbot initialized successfully');
+                } else {
+                    console.error('Chatbot class not found');
+                }
+            }, 500);
+        });
+    </script>
+</body>
+
+</html>

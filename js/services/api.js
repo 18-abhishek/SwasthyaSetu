@@ -1,0 +1,118 @@
+/**
+ * API Service Layer - Fixed for Backend Connection
+ */
+
+const APIService = {
+    // Automatically detect the correct API URL
+    get baseURL() {
+        const hostname = window.location.hostname;
+        const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+        const apiUrl = isLocal
+            ? 'http://localhost:5000/api'
+            : API_CONFIG.PRODUCTION_API_URL;
+
+        // Log for debugging
+        console.log('🌐 API Service initialized');
+        console.log('   Hostname:', hostname);
+        console.log('   API URL:', apiUrl);
+
+        return apiUrl;
+    },
+
+    getToken() {
+        const user = AuthService?.getCurrentUser();
+        return user?.token || localStorage.getItem('authToken') || null;
+    },
+
+    async request(endpoint, options = {}) {
+        const { method = 'GET', body = null } = options;
+
+        try {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            const token = this.getToken();
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const config = {
+                method,
+                headers,
+                mode: 'cors'
+            };
+
+            if (body && method !== 'GET') {
+                config.body = JSON.stringify(body);
+            }
+
+            console.log(`API Call: ${method} ${this.baseURL}${endpoint}`);
+
+            const response = await fetch(`${this.baseURL}${endpoint}`, config);
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Network error' }));
+                throw new Error(errorData.message || `HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data;
+
+        } catch (error) {
+            console.error('API Error:', error);
+
+            if (error.name === 'TypeError' || error.message.includes('Failed to fetch')) {
+                throw new Error('Backend server not running. Please start: npm run dev');
+            }
+
+            throw error;
+        }
+    },
+
+    // Test connection
+    async testConnection() {
+        try {
+            const response = await fetch(`${this.baseURL}/health-check`);
+            return response.ok;
+        } catch (error) {
+            return false;
+        }
+    },
+
+    async getHealthAlerts() {
+        return this.request('/health/alerts');
+    },
+
+    async getHospitals(location) {
+        if (location && location.latitude && location.longitude) {
+            return this.request(`/hospitals/nearby/${location.latitude}/${location.longitude}`);
+        }
+        return this.request('/hospitals');
+    },
+
+    async getPatientProfile() {
+        return this.request('/profile');
+    },
+
+    async getAppointments() {
+        return this.request('/appointments');
+    },
+
+    async createAppointment(appointmentData) {
+        return this.request('/appointments', {
+            method: 'POST',
+            body: appointmentData
+        });
+    },
+
+    async getMedicalRecords() {
+        // Placeholder for now as backend endpoint might not be ready
+        // Returning empty list to prevent crash
+        return { success: true, data: [] };
+    }
+};
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = APIService;
+}
