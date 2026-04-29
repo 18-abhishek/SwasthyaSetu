@@ -6,7 +6,9 @@
     "scripts": {
         "start": "node server.js",
         "dev": "nodemon server.js",
-        "seed": "node scripts/seed.js",
+        "seed": "node archive-scripts/seed.js",
+        "seed:gov": "node archive-scripts/seed-gov.js",
+        "seed:analytics": "node archive-scripts/seedAnalytics.js",
         "vercel-build": "echo 'Building backend for Vercel'"
     },
     "keywords": [

@@ -31,12 +31,11 @@ const seedData = async () => {
             {
                 name: 'AIIMS New Delhi',
                 city: 'Delhi',
-                state: 'Delhi',
                 type: 'Government',
                 address: 'Ansari Nagar, New Delhi, Delhi 110029',
                 location: {
-                    type: 'Point',
-                    coordinates: [77.2100, 28.5672] // [longitude, latitude]
+                    latitude: 28.5672,
+                    longitude: 77.2100
                 },
                 contact: {
                     phone: '011-26588500',
@@ -54,22 +53,22 @@ const seedData = async () => {
                     ventilators: true,
                     bloodBank: true
                 },
-                departments: ['Cardiology', 'Neurology', 'Orthopedics', 'General Medicine', 'Pediatrics'],
-                doctors: [
-                    { name: 'Dr. Rajesh Sharma', specialty: 'Cardiology', experience: 15 },
-                    { name: 'Dr. Priya Verma', specialty: 'Neurology', experience: 12 },
-                    { name: 'Dr. Amit Patel', specialty: 'Orthopedics', experience: 10 }
+                departments: [
+                    { name: 'Cardiology', doctors: [{ name: 'Dr. Rajesh Sharma', specialty: 'Cardiology', available: true }] },
+                    { name: 'Neurology', doctors: [{ name: 'Dr. Priya Verma', specialty: 'Neurology', available: true }] },
+                    { name: 'Orthopedics', doctors: [{ name: 'Dr. Amit Patel', specialty: 'Orthopedics', available: true }] },
+                    { name: 'General Medicine', doctors: [] },
+                    { name: 'Pediatrics', doctors: [] }
                 ]
             },
             {
                 name: 'Apollo Hospital Delhi',
                 city: 'Delhi',
-                state: 'Delhi',
                 type: 'Private',
                 address: 'Sarita Vihar, New Delhi, Delhi 110076',
                 location: {
-                    type: 'Point',
-                    coordinates: [77.2843, 28.5413]
+                    latitude: 28.5413,
+                    longitude: 77.2843
                 },
                 contact: {
                     phone: '011-26825000',
@@ -87,21 +86,22 @@ const seedData = async () => {
                     ventilators: true,
                     bloodBank: true
                 },
-                departments: ['Cardiology', 'Oncology', 'Neurology', 'General Medicine', 'Gynecology'],
-                doctors: [
-                    { name: 'Dr. Sunita Gupta', specialty: 'Cardiology', experience: 18 },
-                    { name: 'Dr. Vikram Singh', specialty: 'Oncology', experience: 20 }
+                departments: [
+                    { name: 'Cardiology', doctors: [{ name: 'Dr. Sunita Gupta', specialty: 'Cardiology', available: true }] },
+                    { name: 'Oncology', doctors: [{ name: 'Dr. Vikram Singh', specialty: 'Oncology', available: true }] },
+                    { name: 'Neurology', doctors: [] },
+                    { name: 'General Medicine', doctors: [] },
+                    { name: 'Gynecology', doctors: [] }
                 ]
             },
             {
                 name: 'Tata Memorial Hospital',
                 city: 'Mumbai',
-                state: 'Maharashtra',
                 type: 'Government',
                 address: 'Dr Ernest Borges Marg, Parel, Mumbai 400012',
                 location: {
-                    type: 'Point',
-                    coordinates: [72.8447, 19.0142]
+                    latitude: 19.0142,
+                    longitude: 72.8447
                 },
                 contact: {
                     phone: '022-24177000',
@@ -119,20 +119,20 @@ const seedData = async () => {
                     ventilators: true,
                     bloodBank: true
                 },
-                departments: ['Oncology', 'Radiation Oncology', 'Surgical Oncology'],
-                doctors: [
-                    { name: 'Dr. Ramesh Nair', specialty: 'Oncology', experience: 22 }
+                departments: [
+                    { name: 'Oncology', doctors: [{ name: 'Dr. Ramesh Nair', specialty: 'Oncology', available: true }] },
+                    { name: 'Radiation Oncology', doctors: [] },
+                    { name: 'Surgical Oncology', doctors: [] }
                 ]
             },
             {
                 name: 'Fortis Hospital Bangalore',
                 city: 'Bangalore',
-                state: 'Karnataka',
                 type: 'Private',
                 address: 'Bannerghatta Road, Bangalore 560076',
                 location: {
-                    type: 'Point',
-                    coordinates: [77.5986, 12.8953]
+                    latitude: 12.8953,
+                    longitude: 77.5986
                 },
                 contact: {
                     phone: '080-66214444',
@@ -150,20 +150,21 @@ const seedData = async () => {
                     ventilators: true,
                     bloodBank: true
                 },
-                departments: ['Cardiology', 'Neurology', 'Orthopedics', 'General Medicine'],
-                doctors: [
-                    { name: 'Dr. Kavita Rao', specialty: 'Cardiology', experience: 14 }
+                departments: [
+                    { name: 'Cardiology', doctors: [{ name: 'Dr. Kavita Rao', specialty: 'Cardiology', available: true }] },
+                    { name: 'Neurology', doctors: [] },
+                    { name: 'Orthopedics', doctors: [] },
+                    { name: 'General Medicine', doctors: [] }
                 ]
             },
             {
                 name: 'CMC Vellore',
                 city: 'Vellore',
-                state: 'Tamil Nadu',
                 type: 'Trust',
                 address: 'Ida Scudder Road, Vellore 632004',
                 location: {
-                    type: 'Point',
-                    coordinates: [79.1352, 12.9246]
+                    latitude: 12.9246,
+                    longitude: 79.1352
                 },
                 contact: {
                     phone: '0416-2281000',
@@ -181,9 +182,12 @@ const seedData = async () => {
                     ventilators: true,
                     bloodBank: true
                 },
-                departments: ['Cardiology', 'Neurology', 'Orthopedics', 'General Medicine', 'Pediatrics'],
-                doctors: [
-                    { name: 'Dr. Thomas Jacob', specialty: 'Cardiology', experience: 25 }
+                departments: [
+                    { name: 'Cardiology', doctors: [{ name: 'Dr. Thomas Jacob', specialty: 'Cardiology', available: true }] },
+                    { name: 'Neurology', doctors: [] },
+                    { name: 'Orthopedics', doctors: [] },
+                    { name: 'General Medicine', doctors: [] },
+                    { name: 'Pediatrics', doctors: [] }
                 ]
             }
         ]);
@@ -305,48 +309,48 @@ const seedData = async () => {
         const appointments = await Appointment.insertMany([
             // Upcoming appointments
             {
-                patientId: users[0]._id,
-                hospitalId: hospitals[0]._id,
+                userId: users[0]._id,
+                hospitalId: hospitals[0]._id.toString(),
                 hospital: hospitals[0].name,
                 doctor: 'Dr. Rajesh Sharma',
                 specialty: 'Cardiology',
-                date: tomorrow.toISOString().split('T')[0],
+                date: tomorrow,
                 time: '10:00 AM',
                 type: 'In-person',
                 reason: 'Regular checkup for heart condition',
                 status: 'confirmed'
             },
             {
-                patientId: users[1]._id,
-                hospitalId: hospitals[3]._id,
+                userId: users[1]._id,
+                hospitalId: hospitals[3]._id.toString(),
                 hospital: hospitals[3].name,
                 doctor: 'Dr. Kavita Rao',
                 specialty: 'Cardiology',
-                date: nextWeek.toISOString().split('T')[0],
+                date: nextWeek,
                 time: '02:00 PM',
                 type: 'Telemedicine',
                 reason: 'Follow-up consultation',
                 status: 'confirmed'
             },
             {
-                patientId: users[2]._id,
-                hospitalId: hospitals[1]._id,
+                userId: users[2]._id,
+                hospitalId: hospitals[1]._id.toString(),
                 hospital: hospitals[1].name,
                 doctor: 'Dr. Sunita Gupta',
                 specialty: 'Cardiology',
-                date: nextWeek.toISOString().split('T')[0],
+                date: nextWeek,
                 time: '11:00 AM',
                 type: 'In-person',
                 reason: 'Chest pain evaluation',
                 status: 'pending'
             },
             {
-                patientId: users[3]._id,
-                hospitalId: hospitals[0]._id,
+                userId: users[3]._id,
+                hospitalId: hospitals[0]._id.toString(),
                 hospital: hospitals[0].name,
                 doctor: 'Dr. Amit Patel',
                 specialty: 'Orthopedics',
-                date: tomorrow.toISOString().split('T')[0],
+                date: tomorrow,
                 time: '03:00 PM',
                 type: 'In-person',
                 reason: 'Knee pain consultation',
@@ -355,24 +359,24 @@ const seedData = async () => {
 
             // Past appointments
             {
-                patientId: users[0]._id,
-                hospitalId: hospitals[0]._id,
+                userId: users[0]._id,
+                hospitalId: hospitals[0]._id.toString(),
                 hospital: hospitals[0].name,
                 doctor: 'Dr. Priya Verma',
                 specialty: 'Neurology',
-                date: lastWeek.toISOString().split('T')[0],
+                date: lastWeek,
                 time: '09:00 AM',
                 type: 'In-person',
                 reason: 'Headache consultation',
                 status: 'completed'
             },
             {
-                patientId: users[4]._id,
-                hospitalId: hospitals[2]._id,
+                userId: users[4]._id,
+                hospitalId: hospitals[2]._id.toString(),
                 hospital: hospitals[2].name,
                 doctor: 'Dr. Ramesh Nair',
                 specialty: 'Oncology',
-                date: lastWeek.toISOString().split('T')[0],
+                date: lastWeek,
                 time: '01:00 PM',
                 type: 'In-person',
                 reason: 'Cancer screening',
@@ -423,7 +427,7 @@ const seedData = async () => {
             {
                 title: 'Air Quality Alert - Delhi NCR',
                 severity: 'high',
-                type: 'environmental',
+                type: 'pollution',
                 description: 'Air Quality Index (AQI) has reached hazardous levels.',
                 symptoms: ['Breathing Difficulty', 'Eye Irritation', 'Cough'],
                 prevention: [
@@ -457,7 +461,7 @@ const seedData = async () => {
             {
                 title: 'COVID-19 Booster Dose Reminder',
                 severity: 'low',
-                type: 'vaccination',
+                type: 'disease',
                 description: 'Booster doses available for eligible population.',
                 prevention: [
                     'Check eligibility on CoWIN portal',
